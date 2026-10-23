@@ -1,4 +1,4 @@
-import {carregarMascara} from './mascaras.mjs';
+import {carregarMascara, mascaraPadrao} from './mascaras.mjs';
 
 // Formatos aceitos: mime → [tipo de mídia, extensão do arquivo salvo]
 export const TIPOS_MIDIA = {
@@ -15,7 +15,7 @@ export const lerCampos = (corpo) => {
   const texto = (v, max) => String(v ?? '').trim().slice(0, max);
   const lead = texto(corpo.lead, 400);
   if (!lead) throw new Error('Escreva o lead da notícia');
-  const mascaraId = texto(corpo.mascaraId, 60) || 'padrao';
+  const mascaraId = texto(corpo.mascaraId, 60) || mascaraPadrao().id;
   carregarMascara(mascaraId); // valida
   const noticia = {lead};
   for (const [campo, max] of [

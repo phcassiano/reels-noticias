@@ -3,6 +3,7 @@
 export type Mascara = {
   id: string;
   nome: string;
+  padrao?: boolean; // escolhida quando o post não indica máscara (painel e bot)
   // "citacao": mídia em tela cheia com círculo de aspas (padrão)
   // "manchete": mídia no topo que se funde num fundo sólido, título grande e faixa colorida lateral
   layout?: 'citacao' | 'manchete';

@@ -9,7 +9,7 @@ import {SAIDAS, UPLOADS} from './caminhos.mjs';
 import {lerCampos, TIPOS_MIDIA} from './campos.mjs';
 import {anotar, aoMudar, atualizar, criar, novoId, obter, remover} from './fila.mjs';
 import {mensagemDeErroIa, sugerir} from './ia.mjs';
-import {listarMascaras} from './mascaras.mjs';
+import {listarMascaras, mascaraPadrao} from './mascaras.mjs';
 
 const LIMITE_DOWNLOAD = 20 * 1024 * 1024; // limite da API pública de bots para baixar arquivos
 const LIMITE_ENVIO = 50 * 1024 * 1024; // limite para o bot enviar arquivos
@@ -58,8 +58,6 @@ export const iniciarBot = ({token, autorizados, apiRoot}) => {
     if (r?.arquivoMidia && !r.postId) rmSync(path.join(UPLOADS, r.arquivoMidia), {force: true});
     rascunhos.delete(chatId);
   };
-
-  const mascaraPadrao = () => listarMascaras()[0];
 
   const novoRascunho = (chatId) => {
     const mascara = mascaraPadrao();

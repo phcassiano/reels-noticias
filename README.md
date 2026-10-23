@@ -135,9 +135,9 @@ Se o Chrome do Remotion não puder ser baixado, aponte para um Chromium local:
 
 Cada máscara escolhe um layout (`"layout"` no JSON):
 
-- **`citacao`** (padrão, máscara `padrao`): mídia em tela cheia, círculo com aspas ou logo, etiqueta no topo, texto
+- **`citacao`** (máscara `padrao`, chamada "Citação"): mídia em tela cheia, círculo com aspas ou logo, etiqueta no topo, texto
   grande com barra vertical e assinatura.
-- **`manchete`** (máscara `manchete-azul`): mídia no topo que se dissolve num fundo sólido, etiqueta em pílula,
+- **`manchete`** (máscara `manchete-azul`, a padrão do painel e do bot): mídia no topo que se dissolve num fundo sólido, etiqueta em pílula,
   título grande em branco com os trechos `*destacados*` na cor de destaque, subtítulo opcional, marca centralizada
   embaixo e faixa colorida na lateral esquerda.
 
@@ -177,6 +177,7 @@ Cada máscara é um JSON em `mascaras/<id>.json`, com arquivos em `public/mascar
 
 | Campo | Uso |
 |---|---|
+| `padrao` | `true` na máscara que o painel e o bot usam quando nada é escolhido (hoje: `manchete-azul`) |
 | `layout` | `citacao` (padrão) ou `manchete` |
 | `perfil.nome` | Assinatura (citação) ou marca em texto quando não há logo (manchete) |
 | `perfil.handle` | @ na linha de detalhe |
