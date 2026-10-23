@@ -34,6 +34,9 @@ app.use(
   express.static(UPLOADS, {fallthrough: false})
 );
 
+// Verificação de saúde para o Docker / monitoramento (sem senha, sem dados).
+app.get('/saude', (req, res) => res.json({ok: true}));
+
 // Senha única (Basic Auth) quando PAINEL_SENHA estiver definida.
 const senhaConfere = (recebida) => {
   const a = Buffer.from(recebida);

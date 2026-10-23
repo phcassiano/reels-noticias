@@ -1,0 +1,36 @@
+# Uso: cp .env.example .env  (preencha)  &&  docker compose up -d --build
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    init: true
+    env_file: .env
+    environment:
+      # impede subir na internet sem senha
+      PAINEL_SENHA: ${PAINEL_SENHA:?defina PAINEL_SENHA no .env}
+    volumes:
+      - dados:/dados
+    shm_size: 1gb # memória compartilhada para o Chrome do render
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      DOMINIO: ${DOMINIO:?defina DOMINIO no .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  dados:
+  caddy_data:
+  caddy_config:

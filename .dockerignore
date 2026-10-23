@@ -1,0 +1,8 @@
+.git
+node_modules
+dados
+out
+public/_entrada
+public/exemplo
+.env
+*.log

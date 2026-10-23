@@ -67,6 +67,60 @@ Detalhes:
 | `TELEGRAM_AUTORIZADOS` | IDs e/ou @usuários liberados, separados por vírgula |
 | `TELEGRAM_API` | Endereço alternativo da Bot API (servidor local), opcional |
 
+## Hospedagem em subdomínio (Docker)
+
+A imagem traz o painel, o bot e o render (Chrome headless do Remotion). O Caddy fica na frente e emite o
+certificado HTTPS do subdomínio sozinho.
+
+**Servidor:** uma VPS Linux (Ubuntu 22.04/24.04) com **pelo menos 2 vCPU e 4 GB de RAM** (o render usa bastante
+CPU; com 4 vCPU um Reel de 8 s sai em ~30 s), 20 GB de disco e as portas 80 e 443 livres. Hospedagens tipo Vercel ou
+Netlify não servem: elas não rodam processos longos nem o Chrome do render.
+
+1. **DNS** — no painel onde o domínio está configurado (Registro.br, Cloudflare, Vercel, Hostinger…), crie um
+   registro **A** com nome `reels` (ou o subdomínio que preferir) apontando para o IP da VPS.
+   Na Cloudflare, deixe a nuvem **cinza (somente DNS)**: o proxy dela limita uploads a 100 MB no plano grátis.
+2. **Docker na VPS:**
+
+   ```bash
+   curl -fsSL https://get.docker.com | sh
+   ```
+
+3. **Código e configuração:**
+
+   ```bash
+   git clone https://github.com/phcassiano/reels-noticias.git && cd reels-noticias
+   cp .env.example .env && nano .env   # DOMINIO, PAINEL_SENHA, TELEGRAM_*, ANTHROPIC_API_KEY
+   ```
+
+   O repositório é privado: no `git clone`, use seu usuário do GitHub e um
+   [token de acesso](https://github.com/settings/tokens) como senha.
+4. **Subir:**
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+   Em 1 ou 2 minutos o painel abre em `https://reels.seudominio.com.br` (usuário qualquer + `PAINEL_SENHA`).
+   O compose se recusa a subir sem `PAINEL_SENHA` e `DOMINIO` definidos.
+
+Operação do dia a dia:
+
+| Tarefa | Comando |
+|---|---|
+| Ver logs | `docker compose logs -f app` |
+| Atualizar depois de um `git push` | `git pull && docker compose up -d --build` |
+| Reiniciar | `docker compose restart app` |
+| Backup dos vídeos e posts | `docker run --rm -v reels-noticias_dados:/d -v $PWD:/b alpine tar czf /b/dados.tgz -C /d .` |
+
+Observações:
+
+- **Bot do Telegram:** só pode haver um servidor por token. Desligue qualquer outra cópia (no seu PC, por exemplo)
+  antes de subir na VPS.
+- **Já existe Nginx/Apache na VPS usando as portas 80/443?** Suba só o app (`docker compose up -d app`), publique a
+  porta localmente com um `docker-compose.override.yml` contendo `services: {app: {ports: ["127.0.0.1:3000:3000"]}}`
+  e aponte o proxy existente para `http://127.0.0.1:3000` (com limite de upload de ~520 MB).
+- Os dados ficam no volume `dados` (uploads, vídeos e `posts.json`) e sobrevivem a atualizações da imagem.
+
 ## Render por linha de comando
 
 ```bash
@@ -136,6 +190,7 @@ src/Reel.tsx            composição: mídia, círculo, etiqueta, texto, assinat
 src/Root.tsx            registro da composição e cálculo da duração
 src/tipos.ts            tipos de Noticia e Mascara
 servidor/index.mjs      painel: rotas HTTP, upload e senha
+Dockerfile, docker-compose.yml, Caddyfile  hospedagem com HTTPS automático
 servidor/fila.mjs       fila de render e estado dos posts (dados/posts.json)
 servidor/ia.mjs         sugestões com o Claude
 servidor/telegram.mjs   bot do Telegram
@@ -150,7 +205,7 @@ exemplos/               posts de exemplo
 ## Próximos passos
 
 1. Personalizar a máscara (nome, @, logo e cor).
-2. Hospedar o painel numa VPS ou serviço com Docker (precisa de CPU para o render) e trocar `dados/` pelo Supabase
-   (Storage para mídias e vídeos, tabela de posts) — a troca fica concentrada em `servidor/fila.mjs`.
+2. Trocar `dados/` pelo Supabase (Storage para mídias e vídeos, tabela de posts) — a troca fica concentrada em
+   `servidor/fila.mjs`.
 3. Legendas automáticas para vídeos com fala e trilha para fotos.
 4. Publicação e agendamento via Instagram Graph API.

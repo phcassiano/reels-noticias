@@ -1,0 +1,11 @@
+# Caddy emite e renova o certificado HTTPS do subdomínio sozinho (Let's Encrypt).
+{$DOMINIO} {
+	encode zstd gzip
+
+	# uploads de vídeo pelo painel (o app limita a 500 MB)
+	request_body {
+		max_size 520MB
+	}
+
+	reverse_proxy app:3000
+}
