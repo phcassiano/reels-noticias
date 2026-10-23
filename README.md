@@ -3,7 +3,7 @@
 Gera Reels de notícia (1080×1920, 30 fps, H.264 + AAC) a partir de **uma foto ou vídeo + manchete + lead**,
 aplicando uma **máscara** (identidade visual do perfil/site). O motion graphics é feito com [Remotion](https://www.remotion.dev/).
 
-Etapa atual: **template de vídeo + painel de envio com sugestões do Claude**. Ainda não há Supabase nem publicação automática no Instagram.
+Etapa atual: **template de vídeo + painel de envio + bot do Telegram, com sugestões do Claude**. Ainda não há Supabase nem publicação automática no Instagram.
 
 ## Painel de envio
 
@@ -33,6 +33,39 @@ No painel (feito para usar no celular):
 
 Os renders rodam um por vez na própria máquina (cerca de 30 a 60 s para um Reel de 8 s em 4 núcleos).
 As sugestões usam o modelo `claude-opus-5-5` com fallback automático do servidor caso o modelo recuse o pedido.
+
+## Bot do Telegram
+
+O bot faz o mesmo que o painel, direto pelo celular, e compartilha a mesma fila (o que sai pelo bot aparece no painel).
+
+1. No Telegram, fale com o **@BotFather**, mande `/newbot` e copie o token.
+2. Suba o painel com o token e quem pode usar o bot (IDs numéricos ou @usuários, separados por vírgula):
+
+   ```bash
+   TELEGRAM_TOKEN=123456:ABC... TELEGRAM_AUTORIZADOS=@seuusuario,123456789 \
+   ANTHROPIC_API_KEY=sk-ant-... PAINEL_SENHA=uma-senha npm run painel
+   ```
+
+   Quem não estiver na lista recebe só uma mensagem com o próprio ID (`/id` também mostra).
+3. No bot: mande a **foto ou vídeo com o lead na legenda** (ou o lead e depois a mídia). Chega um cartão com as
+   sugestões da IA e botões para ajustar lead, etiqueta, editoria, crédito, legenda, P&B e máscara. Toque em
+   **Gerar vídeo**: o cartão mostra o progresso e o bot envia o Reel, a capa e a legenda (toque para copiar).
+   No vídeo pronto há **Editar texto** (renderiza de novo com a mesma mídia) e **Excluir**.
+
+Detalhes:
+
+- Usa *long polling*: não precisa de endereço público nem HTTPS, funciona até num PC em casa. Rode só uma cópia
+  do servidor por token (duas cópias disputam as mensagens).
+- Limites do Telegram para bots: recebe arquivos de até **20 MB** e envia até **50 MB**. Mande vídeos comprimidos
+  (não "como arquivo") ou use o painel para arquivos maiores. Com um [servidor local da Bot API](https://github.com/tdlib/telegram-bot-api)
+  em modo `--local` os limites sobem para 2 GB: aponte `TELEGRAM_API` para ele.
+- Rascunhos em andamento ficam na memória: se o servidor reiniciar, é só mandar a mídia de novo.
+
+| Variável | Uso |
+|---|---|
+| `TELEGRAM_TOKEN` | Token do @BotFather. Sem ele o bot não sobe |
+| `TELEGRAM_AUTORIZADOS` | IDs e/ou @usuários liberados, separados por vírgula |
+| `TELEGRAM_API` | Endereço alternativo da Bot API (servidor local), opcional |
 
 ## Render por linha de comando
 
@@ -105,6 +138,8 @@ src/tipos.ts            tipos de Noticia e Mascara
 servidor/index.mjs      painel: rotas HTTP, upload e senha
 servidor/fila.mjs       fila de render e estado dos posts (dados/posts.json)
 servidor/ia.mjs         sugestões com o Claude
+servidor/telegram.mjs   bot do Telegram
+servidor/campos.mjs     validação dos campos e formatos aceitos
 servidor/renderizador.mjs  render MP4 + capa (compartilhado com o script)
 painel/index.html       interface do painel
 scripts/render.mjs      render por linha de comando

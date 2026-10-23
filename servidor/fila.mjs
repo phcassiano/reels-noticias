@@ -14,8 +14,21 @@ let posts = existsSync(ARQUIVO) ? JSON.parse(readFileSync(ARQUIVO, 'utf8')) : []
 for (const p of posts) if (p.status === 'renderizando') Object.assign(p, {status: 'na_fila', progresso: 0});
 
 let ocupado = false;
-let urlMidia = () => {
-  throw new Error('Fila não iniciada');
+const ouvintes = [];
+
+// Avisa interessados (ex: o bot do Telegram) sobre mudanças de status e progresso.
+export const aoMudar = (fn) => ouvintes.push(fn);
+const notificar = (post) => {
+  for (const fn of ouvintes) {
+    try {
+      fn(post);
+    } catch (erro) {
+      console.error('Erro ao notificar mudança de post:', erro);
+    }
+  }
+};
+let urlMidia = (arquivo) => {
+  throw new Error(`Fila não iniciada (${arquivo})`);
 };
 
 const salvar = () => {
@@ -30,6 +43,7 @@ export const obter = (id) => posts.find((p) => p.id === id);
 export const criar = (post) => {
   posts.push({...post, criadoEm: new Date().toISOString(), status: 'na_fila', progresso: 0});
   salvar();
+  notificar(obter(post.id));
   processar();
   return obter(post.id);
 };
@@ -40,7 +54,17 @@ export const atualizar = (id, campos) => {
   if (post.status === 'renderizando') throw new Error('Aguarde o render atual terminar');
   Object.assign(post, campos, {status: 'na_fila', progresso: 0, erro: undefined});
   salvar();
+  notificar(post);
   processar();
+  return post;
+};
+
+// Guarda informações extras no post sem mexer no status (ex: mensagens do Telegram).
+export const anotar = (id, campos) => {
+  const post = obter(id);
+  if (!post) return null;
+  Object.assign(post, campos);
+  salvar();
   return post;
 };
 
@@ -65,6 +89,7 @@ const processar = async () => {
   ocupado = true;
   Object.assign(post, {status: 'renderizando', progresso: 0});
   salvar();
+  notificar(post);
   const inicio = Date.now();
   // Nome muda a cada render para o navegador não mostrar a versão antiga do cache.
   const versao = Date.now().toString(36);
@@ -81,7 +106,10 @@ const processar = async () => {
         saida: path.join(SAIDAS, video),
         capa: path.join(SAIDAS, capa),
         aoProgredir: (p) => {
-          post.progresso = Math.round(p * 100);
+          const progresso = Math.round(p * 100);
+          if (progresso === post.progresso) return;
+          post.progresso = progresso;
+          notificar(post);
         },
       }
     );
@@ -100,6 +128,7 @@ const processar = async () => {
   } finally {
     ocupado = false;
     salvar();
+    notificar(post);
     processar();
   }
 };

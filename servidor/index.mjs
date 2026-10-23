@@ -1,5 +1,6 @@
 // Painel de envio: recebe mídia + lead, sugere textos com o Claude e renderiza o Reel.
-// Uso: npm run painel   (variáveis: PORTA, PAINEL_SENHA, ANTHROPIC_API_KEY, REMOTION_BROWSER_EXECUTABLE)
+// Uso: npm run painel   (variáveis: PORTA, PAINEL_SENHA, ANTHROPIC_API_KEY, TELEGRAM_TOKEN,
+// TELEGRAM_AUTORIZADOS, REMOTION_BROWSER_EXECUTABLE)
 import express from 'express';
 import multer from 'multer';
 import {timingSafeEqual} from 'node:crypto';
@@ -8,20 +9,14 @@ import path from 'node:path';
 import {RAIZ, SAIDAS, UPLOADS} from './caminhos.mjs';
 import {atualizar, criar, iniciarFila, listar, novoId, obter, remover} from './fila.mjs';
 import {mensagemDeErroIa, sugerir} from './ia.mjs';
-import {carregarMascara, listarMascaras} from './mascaras.mjs';
+import {lerCampos, TIPOS_MIDIA} from './campos.mjs';
+import {listarMascaras} from './mascaras.mjs';
 import {prepararPacote} from './renderizador.mjs';
+import {iniciarBot} from './telegram.mjs';
 
 const PORTA = Number(process.env.PORTA ?? 3000);
 const SENHA = process.env.PAINEL_SENHA ?? '';
 
-const TIPOS = {
-  'image/jpeg': ['foto', '.jpg'],
-  'image/png': ['foto', '.png'],
-  'image/webp': ['foto', '.webp'],
-  'video/mp4': ['video', '.mp4'],
-  'video/quicktime': ['video', '.mov'],
-  'video/webm': ['video', '.webm'],
-};
 
 const app = express();
 app.disable('x-powered-by');
@@ -63,38 +58,15 @@ const enviar = multer({
     destination: UPLOADS,
     filename: (req, arquivo, cb) => {
       req.idPost = novoId();
-      cb(null, `${req.idPost}${TIPOS[arquivo.mimetype][1]}`);
+      cb(null, `${req.idPost}${TIPOS_MIDIA[arquivo.mimetype][1]}`);
     },
   }),
   limits: {fileSize: 500 * 1024 * 1024, files: 1},
   fileFilter: (req, arquivo, cb) =>
-    TIPOS[arquivo.mimetype]
+    TIPOS_MIDIA[arquivo.mimetype]
       ? cb(null, true)
       : cb(new Error('Formato não suportado. Use JPG, PNG, WEBP, MP4, MOV ou WEBM.')),
 });
-
-// Campos de texto aceitos do formulário, já limpos.
-const lerCampos = (corpo) => {
-  const texto = (v, max) => String(v ?? '').trim().slice(0, max);
-  const lead = texto(corpo.lead, 400);
-  if (!lead) throw new Error('Escreva o lead da notícia');
-  const mascaraId = texto(corpo.mascaraId, 60) || 'padrao';
-  carregarMascara(mascaraId); // valida
-  const noticia = {lead};
-  for (const [campo, max] of [
-    ['editoria', 40],
-    ['etiqueta', 30],
-    ['credito', 60],
-  ]) {
-    const v = texto(corpo[campo], max);
-    if (v) noticia[campo] = v;
-  }
-  if (corpo.pretoEBranco !== undefined && corpo.pretoEBranco !== '')
-    noticia.pretoEBranco = corpo.pretoEBranco === true || corpo.pretoEBranco === 'true';
-  const duracao = Number(corpo.duracaoFoto);
-  if (duracao >= 3 && duracao <= 60) noticia.duracaoFoto = duracao;
-  return {noticia, mascaraId, legenda: texto(corpo.legenda, 2200)};
-};
 
 const rota = (fn) => async (req, res) => {
   try {
@@ -143,7 +115,7 @@ app.post(
     const post = criar({
       id: req.idPost,
       ...campos,
-      tipoMidia: TIPOS[req.file.mimetype][0],
+      tipoMidia: TIPOS_MIDIA[req.file.mimetype][0],
       arquivoMidia: req.file.filename,
       nomeOriginal: req.file.originalname,
     });
@@ -176,6 +148,16 @@ app.delete(
 app.listen(PORTA, () => {
   console.log(`Painel em http://localhost:${PORTA}${SENHA ? '' : '  (sem senha: defina PAINEL_SENHA antes de expor na internet)'}`);
   iniciarFila({urlMidia: (arquivo) => `http://127.0.0.1:${PORTA}/interno/uploads/${encodeURIComponent(arquivo)}`});
+  if (process.env.TELEGRAM_TOKEN) {
+    const autorizados = new Set(
+      (process.env.TELEGRAM_AUTORIZADOS ?? '')
+        .split(',')
+        .map((v) => v.trim().toLowerCase())
+        .filter(Boolean)
+        .map((v) => (/^\d+$/.test(v) || v.startsWith('@') ? v : `@${v}`))
+    );
+    iniciarBot({token: process.env.TELEGRAM_TOKEN, autorizados, apiRoot: process.env.TELEGRAM_API});
+  }
   // Adianta o empacotamento do template para o primeiro render sair mais rápido.
   prepararPacote().then(
     () => console.log('Template pronto para renderizar'),
