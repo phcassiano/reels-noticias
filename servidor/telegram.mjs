@@ -39,6 +39,8 @@ export const iniciarBot = ({token, autorizados, apiRoot}) => {
 
   bot.use(async (ctx, next) => {
     if (liberado(ctx.from)) return next();
+    if (ctx.from)
+      console.log(`Telegram: acesso negado para ${ctx.from.id} (@${ctx.from.username ?? '-'}, ${ctx.from.first_name})`);
     if (ctx.chat?.type === 'private' && ctx.message)
       await ctx.reply(
         `Este bot é privado. Seu ID do Telegram é <code>${ctx.from.id}</code>: peça para incluí-lo em TELEGRAM_AUTORIZADOS.`,
