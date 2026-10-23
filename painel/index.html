@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f0e">
+<title>Reels Notícias</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%232ee6a6'/%3E%3Ctext x='32' y='58' text-anchor='middle' font-family='Georgia' font-weight='700' font-size='56' fill='%23fff'%3E%E2%80%9D%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/fontes/500.css">
+<link rel="stylesheet" href="/fontes/600.css">
+<link rel="stylesheet" href="/fontes/700.css">
+<style>
+  :root {
+    --fundo: #0d0f0e; --painel: #161a19; --borda: #252b29; --borda2: #323a37;
+    --texto: #eef3f1; --suave: #93a19c; --destaque: #2ee6a6; --destaque-tinta: #04140d;
+    --erro: #ff6b5b; --aviso: #ffc94d; --raio: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--fundo); color: var(--texto); min-height: 100vh;
+    font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.45;
+    background-image: radial-gradient(70% 35% at 50% -8%, rgba(46,230,166,.13), transparent 70%);
+    padding: 20px 16px calc(40px + env(safe-area-inset-bottom));
+  }
+  .topo { max-width: 1120px; margin: 0 auto 22px; display: flex; align-items: center; gap: 12px; }
+  .marca { width: 40px; height: 40px; border-radius: 50%; background: var(--destaque); color: var(--destaque-tinta);
+    display: grid; place-items: center; font: 700 30px/1 Georgia, serif; padding-top: 12px; flex-shrink: 0; }
+  h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -.01em; }
+  .topo p { color: var(--suave); font-size: .9rem; }
+  main { max-width: 1120px; margin: 0 auto; display: grid; gap: 20px; }
+  @media (min-width: 900px) { main { grid-template-columns: 430px 1fr; align-items: start; } .form { position: sticky; top: 20px; } }
+  .cartao { background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio); padding: 18px; }
+  h2 { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--destaque); margin-bottom: 14px; }
+  label { display: block; font-size: .82rem; font-weight: 600; color: var(--suave); margin: 14px 0 6px; }
+  input[type=text], input[type=number], textarea, select {
+    width: 100%; background: #0f1312; border: 1px solid var(--borda2); border-radius: 10px; color: var(--texto);
+    padding: 11px 12px; font: inherit; font-size: 16px; }
+  textarea { resize: vertical; min-height: 96px; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--destaque); outline-offset: -1px; border-color: transparent; }
+  .dica { font-size: .78rem; color: var(--suave); margin-top: 5px; display: flex; justify-content: space-between; gap: 8px; }
+  .dica code { background: #0f1312; border: 1px solid var(--borda); border-radius: 5px; padding: 0 4px; color: var(--destaque); }
+  .linha { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .linha > div { min-width: 0; }
+
+  .upload { position: relative; border: 1.5px dashed var(--borda2); border-radius: 12px; min-height: 150px;
+    display: grid; place-items: center; text-align: center; color: var(--suave); cursor: pointer; overflow: hidden; background: #0f1312; }
+  .upload.arrastando { border-color: var(--destaque); color: var(--texto); }
+  .upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload strong { color: var(--texto); display: block; font-weight: 600; }
+  .upload .previa { display: none; width: 100%; max-height: 300px; object-fit: contain; background: #000; }
+  .upload.com-arquivo { min-height: 0; border-style: solid; }
+  .upload.com-arquivo .vazio { display: none; }
+  .upload.com-arquivo .previa { display: block; }
+  .upload .trocar { display: none; position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,.7);
+    color: #fff; font-size: .78rem; padding: 4px 10px; border-radius: 99px; pointer-events: none; }
+  .upload.com-arquivo .trocar { display: block; }
+
+  .alternar { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: .9rem; cursor: pointer; }
+  .alternar input { width: 20px; height: 20px; accent-color: var(--destaque); }
+
+  button { font: inherit; cursor: pointer; border-radius: 12px; border: 1px solid var(--borda2);
+    background: #1d2321; color: var(--texto); padding: 11px 14px; font-weight: 600; min-height: 44px; }
+  button:hover:not(:disabled) { border-color: var(--suave); }
+  button:disabled { opacity: .55; cursor: wait; }
+  .principal { width: 100%; margin-top: 18px; background: var(--destaque); color: var(--destaque-tinta); border: 0; font-size: 1.02rem; font-weight: 700; }
+  .principal:hover:not(:disabled) { filter: brightness(1.06); }
+  .ia { width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .ia svg { width: 18px; height: 18px; color: var(--destaque); }
+
+  .aviso { margin-top: 12px; padding: 10px 12px; border-radius: 10px; font-size: .88rem; display: none; }
+  .aviso.mostrar { display: block; }
+  .aviso.erro { background: rgba(255,107,91,.1); border: 1px solid rgba(255,107,91,.35); color: #ffb3aa; }
+  .aviso.ok { background: rgba(46,230,166,.08); border: 1px solid rgba(46,230,166,.3); color: #a8f3d6; }
+  .editando { display: none; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255,201,77,.08);
+    border: 1px solid rgba(255,201,77,.35); color: #ffe2a0; border-radius: 10px; padding: 8px 8px 8px 12px; font-size: .88rem; margin-bottom: 4px; }
+  .editando.mostrar { display: flex; }
+  .editando button { min-height: 34px; padding: 4px 12px; font-size: .85rem; }
+  .barra-envio { height: 6px; border-radius: 99px; background: var(--borda); margin-top: 12px; overflow: hidden; display: none; }
+  .barra-envio.mostrar { display: block; }
+  .barra-envio i { display: block; height: 100%; width: 0; background: var(--destaque); transition: width .2s; }
+
+  .lista { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  .vazia { color: var(--suave); text-align: center; padding: 40px 10px; border: 1px dashed var(--borda2); border-radius: var(--raio); }
+  .post { background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio); overflow: hidden; display: flex; flex-direction: column; }
+  .post .midia { aspect-ratio: 9 / 16; background: #000; position: relative; }
+  .post video, .post .midia img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .post .espera { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 12px;
+    padding: 20px; text-align: center; color: var(--suave); font-size: .9rem; background: linear-gradient(160deg, #1a201e, #0c0f0e); }
+  .post .espera b { color: var(--texto); font-size: 1.6rem; font-weight: 700; }
+  .progresso { width: 70%; height: 6px; border-radius: 99px; background: var(--borda2); overflow: hidden; }
+  .progresso i { display: block; height: 100%; background: var(--destaque); transition: width .4s; }
+  .post .corpo { padding: 12px 14px 14px; display: grid; gap: 10px; }
+  .post .meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: .78rem; color: var(--suave); }
+  .selo { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 99px; }
+  .selo.pronto { background: rgba(46,230,166,.14); color: var(--destaque); }
+  .selo.na_fila, .selo.renderizando { background: rgba(255,201,77,.12); color: var(--aviso); }
+  .selo.erro { background: rgba(255,107,91,.14); color: var(--erro); }
+  .post .lead { font-size: .92rem; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .post .lead em { font-style: normal; color: var(--destaque); }
+  .post .falha { font-size: .8rem; color: #ffb3aa; word-break: break-word; }
+  .acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .acoes a, .acoes button { display: flex; align-items: center; justify-content: center; text-align: center; text-decoration: none;
+    font-size: .85rem; padding: 8px 10px; min-height: 40px; border-radius: 10px; border: 1px solid var(--borda2); background: #1d2321; color: var(--texto); font-weight: 600; }
+  .acoes .forte { background: var(--destaque); color: var(--destaque-tinta); border: 0; }
+  .acoes .perigo { color: #ffb3aa; }
+</style>
+</head>
+<body>
+  <header class="topo">
+    <div class="marca" aria-hidden="true">&rdquo;</div>
+    <div>
+      <h1>Reels Notícias</h1>
+      <p>Envie a mídia e o lead. O vídeo sai pronto para postar.</p>
+    </div>
+  </header>
+
+  <main>
+    <form class="cartao form" id="form" novalidate>
+      <div class="editando" id="editando"><span id="editandoTexto">Editando</span><button type="button" id="cancelarEdicao">Cancelar</button></div>
+      <h2 id="tituloForm">Novo Reel</h2>
+
+      <div id="blocoUpload">
+        <div class="upload" id="upload">
+          <input type="file" id="midia" name="midia" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm">
+          <div class="vazio"><strong>Toque para escolher foto ou vídeo</strong>JPG, PNG, WEBP, MP4 ou MOV · até 500 MB</div>
+          <img class="previa" id="previaImg" alt="">
+          <video class="previa" id="previaVideo" muted playsinline loop></video>
+          <span class="trocar">Trocar</span>
+        </div>
+      </div>
+
+      <label for="lead">Lead da notícia</label>
+      <textarea id="lead" name="lead" maxlength="400" placeholder="Ex: Governo anuncia corte de 10% na conta de luz a partir de janeiro"></textarea>
+      <div class="dica"><span>Use <code>*palavras*</code> para destacar em cor</span><span id="contador">0/400</span></div>
+
+      <button type="button" class="ia" id="sugerir">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg>
+        <span>Sugerir destaques, etiqueta e legenda</span>
+      </button>
+
+      <div class="linha">
+        <div><label for="editoria">Editoria</label><input type="text" id="editoria" name="editoria" maxlength="40" placeholder="Política"></div>
+        <div><label for="etiqueta">Etiqueta</label><input type="text" id="etiqueta" name="etiqueta" maxlength="30" placeholder="#Política"></div>
+      </div>
+      <div class="linha">
+        <div><label for="credito">Crédito</label><input type="text" id="credito" name="credito" maxlength="60" placeholder="Foto: Agência Brasil"></div>
+        <div><label for="mascaraId">Máscara</label><select id="mascaraId" name="mascaraId"></select></div>
+      </div>
+      <div id="blocoDuracao"><label for="duracaoFoto">Duração (foto)</label>
+        <input type="number" id="duracaoFoto" name="duracaoFoto" min="3" max="60" value="8" inputmode="numeric"></div>
+      <label class="alternar"><input type="checkbox" id="pretoEBranco" name="pretoEBranco"> Mídia em preto e branco</label>
+
+      <label for="legenda">Legenda do post</label>
+      <textarea id="legenda" name="legenda" maxlength="2200" placeholder="Texto que vai na legenda do Instagram (opcional)"></textarea>
+
+      <button type="submit" class="principal" id="gerar">Gerar vídeo</button>
+      <div class="barra-envio" id="barraEnvio"><i></i></div>
+      <div class="aviso" id="aviso" role="status"></div>
+    </form>
+
+    <section>
+      <h2>Seus Reels</h2>
+      <div class="lista" id="lista"></div>
+    </section>
+  </main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const form = $('form');
+let mascaras = [];
+let posts = [];
+let editandoId = null;
+let tipoMidia = null;
+let consulta = null;
+
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const leadHtml = (t) => esc(t).replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+function avisar(texto, tipo = 'erro') {
+  const el = $('aviso');
+  el.textContent = texto;
+  el.className = `aviso mostrar ${tipo}`;
+  if (tipo === 'ok') setTimeout(() => el.classList.remove('mostrar'), 4000);
+}
+const limparAviso = () => $('aviso').classList.remove('mostrar');
+
+async function api(caminho, opcoes = {}) {
+  const resp = await fetch(caminho, {
+    ...opcoes,
+    headers: opcoes.body && !(opcoes.body instanceof FormData) ? {'Content-Type': 'application/json'} : undefined,
+  });
+  if (resp.status === 204) return null;
+  const dados = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(dados.erro || `Erro ${resp.status}`);
+  return dados;
+}
+
+// ---------- máscaras ----------
+async function carregarMascaras() {
+  mascaras = await api('/api/mascaras');
+  $('mascaraId').innerHTML = mascaras.map((m) => `<option value="${esc(m.id)}">${esc(m.nome)}</option>`).join('');
+  aplicarPadraoMascara();
+}
+function aplicarPadraoMascara() {
+  const m = mascaras.find((x) => x.id === $('mascaraId').value);
+  $('pretoEBranco').checked = Boolean(m?.pretoEBranco);
+}
+$('mascaraId').addEventListener('change', aplicarPadraoMascara);
+
+// ---------- mídia ----------
+function mostrarPrevia(arquivo) {
+  const upload = $('upload');
+  const img = $('previaImg');
+  const video = $('previaVideo');
+  [img.src, video.src].forEach((u) => u.startsWith('blob:') && URL.revokeObjectURL(u));
+  img.removeAttribute('src'); video.removeAttribute('src');
+  img.style.display = video.style.display = 'none';
+  if (!arquivo) { upload.classList.remove('com-arquivo'); tipoMidia = null; atualizarDuracao(); return; }
+  tipoMidia = arquivo.type.startsWith('video/') ? 'video' : 'foto';
+  const url = URL.createObjectURL(arquivo);
+  if (tipoMidia === 'video') { video.src = url; video.style.display = 'block'; video.play().catch(() => {}); }
+  else { img.src = url; img.style.display = 'block'; }
+  upload.classList.add('com-arquivo');
+  atualizarDuracao();
+}
+const atualizarDuracao = () => { $('blocoDuracao').style.display = tipoMidia === 'video' ? 'none' : ''; };
+$('midia').addEventListener('change', (e) => mostrarPrevia(e.target.files[0]));
+['dragenter', 'dragover'].forEach((ev) => $('upload').addEventListener(ev, () => $('upload').classList.add('arrastando')));
+['dragleave', 'drop'].forEach((ev) => $('upload').addEventListener(ev, () => $('upload').classList.remove('arrastando')));
+
+// ---------- lead e IA ----------
+const contar = () => { $('contador').textContent = `${$('lead').value.length}/400`; };
+$('lead').addEventListener('input', contar);
+
+$('sugerir').addEventListener('click', async () => {
+  const lead = $('lead').value.trim();
+  if (!lead) { avisar('Escreva o lead antes de pedir sugestões'); $('lead').focus(); return; }
+  const botao = $('sugerir');
+  const rotulo = botao.querySelector('span');
+  botao.disabled = true; rotulo.textContent = 'Pensando…'; limparAviso();
+  try {
+    const s = await api('/api/sugerir', {method: 'POST', body: JSON.stringify({lead, editoria: $('editoria').value})});
+    $('lead').value = s.lead; contar();
+    if (!$('editoria').value.trim()) $('editoria').value = s.editoria;
+    if (!$('etiqueta').value.trim()) $('etiqueta').value = s.etiqueta;
+    $('legenda').value = [s.legenda, s.hashtags.join(' ')].filter(Boolean).join('\n\n');
+    avisar('Sugestões aplicadas. Revise antes de gerar.', 'ok');
+  } catch (erro) {
+    avisar(erro.message);
+  } finally {
+    botao.disabled = false; rotulo.textContent = 'Sugerir destaques, etiqueta e legenda';
+  }
+});
+
+// ---------- envio ----------
+function camposDoForm() {
+  return {
+    lead: $('lead').value, editoria: $('editoria').value, etiqueta: $('etiqueta').value,
+    credito: $('credito').value, mascaraId: $('mascaraId').value, legenda: $('legenda').value,
+    pretoEBranco: String($('pretoEBranco').checked), duracaoFoto: $('duracaoFoto').value,
+  };
+}
+
+// XHR para mostrar o progresso do upload de vídeos grandes.
+function enviarComProgresso(dados) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const barra = $('barraEnvio');
+    xhr.open('POST', '/api/posts');
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable) barra.firstElementChild.style.width = `${(e.loaded / e.total) * 100}%`; };
+    xhr.onload = () => {
+      barra.classList.remove('mostrar');
+      let corpo = {};
+      try { corpo = JSON.parse(xhr.responseText); } catch {}
+      xhr.status < 300 ? resolve(corpo) : reject(new Error(corpo.erro || `Erro ${xhr.status}`));
+    };
+    xhr.onerror = () => { barra.classList.remove('mostrar'); reject(new Error('Falha de conexão no envio')); };
+    barra.firstElementChild.style.width = '0'; barra.classList.add('mostrar');
+    xhr.send(dados);
+  });
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  limparAviso();
+  const campos = camposDoForm();
+  if (!campos.lead.trim()) { avisar('Escreva o lead da notícia'); $('lead').focus(); return; }
+  const arquivo = $('midia').files[0];
+  if (!editandoId && !arquivo) { avisar('Escolha uma foto ou um vídeo'); return; }
+
+  const botao = $('gerar');
+  botao.disabled = true; botao.textContent = editandoId ? 'Salvando…' : 'Enviando…';
+  try {
+    if (editandoId) {
+      await api(`/api/posts/${editandoId}`, {method: 'PUT', body: JSON.stringify(campos)});
+      avisar('Alterações salvas. Renderizando de novo.', 'ok');
+    } else {
+      const dados = new FormData();
+      dados.append('midia', arquivo);
+      Object.entries(campos).forEach(([k, v]) => dados.append(k, v));
+      await enviarComProgresso(dados);
+      avisar('Enviado! O vídeo aparece ao lado quando ficar pronto.', 'ok');
+    }
+    limparForm();
+    await atualizarLista();
+  } catch (erro) {
+    avisar(erro.message);
+  } finally {
+    botao.disabled = false; botao.textContent = editandoId ? 'Salvar e renderizar de novo' : 'Gerar vídeo';
+  }
+});
+
+function limparForm() {
+  const mascara = $('mascaraId').value;
+  form.reset();
+  $('mascaraId').value = mascara;
+  aplicarPadraoMascara();
+  mostrarPrevia(null);
+  contar();
+  sairEdicao();
+}
+
+// ---------- edição ----------
+function entrarEdicao(post) {
+  editandoId = post.id;
+  const n = post.noticia;
+  $('lead').value = n.lead; contar();
+  $('editoria').value = n.editoria ?? '';
+  $('etiqueta').value = n.etiqueta ?? '';
+  $('credito').value = n.credito ?? '';
+  $('mascaraId').value = post.mascaraId;
+  $('pretoEBranco').checked = n.pretoEBranco ?? Boolean(mascaras.find((m) => m.id === post.mascaraId)?.pretoEBranco);
+  $('duracaoFoto').value = n.duracaoFoto ?? 8;
+  $('legenda').value = post.legenda ?? '';
+  tipoMidia = post.tipoMidia; atualizarDuracao();
+  $('blocoUpload').style.display = 'none';
+  $('tituloForm').textContent = 'Editar Reel';
+  $('editandoTexto').textContent = `Editando o Reel de ${new Date(post.criadoEm).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'})} (mesma mídia)`;
+  $('editando').classList.add('mostrar');
+  $('gerar').textContent = 'Salvar e renderizar de novo';
+  form.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+function sairEdicao() {
+  editandoId = null;
+  $('blocoUpload').style.display = '';
+  $('tituloForm').textContent = 'Novo Reel';
+  $('editando').classList.remove('mostrar');
+  $('gerar').textContent = 'Gerar vídeo';
+}
+$('cancelarEdicao').addEventListener('click', limparForm);
+
+// ---------- lista ----------
+const ROTULOS = {na_fila: 'Na fila', renderizando: 'Renderizando', pronto: 'Pronto', erro: 'Erro'};
+
+function cartao(p) {
+  const quando = new Date(p.criadoEm).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'});
+  let midia;
+  if (p.status === 'pronto') {
+    midia = `<video src="/arquivos/${esc(p.video)}" poster="/arquivos/${esc(p.capa)}" controls playsinline preload="none"></video>`;
+  } else if (p.status === 'erro') {
+    midia = `<div class="espera"><b>!</b>O render falhou</div>`;
+  } else {
+    const texto = p.status === 'na_fila' ? 'Na fila…' : `${p.progresso}%`;
+    midia = `<div class="espera"><b>${texto}</b><div class="progresso"><i style="width:${p.progresso}%"></i></div>Gerando o vídeo</div>`;
+  }
+  const ocupado = p.status === 'renderizando';
+  const acoesProntas = p.status === 'pronto' ? `
+      <a class="forte" href="/arquivos/${esc(p.video)}" download="reel-${esc(p.id)}.mp4">Baixar vídeo</a>
+      <a href="/arquivos/${esc(p.capa)}" download="capa-${esc(p.id)}.jpg">Baixar capa</a>
+      ${p.legenda ? `<button type="button" data-acao="copiar" data-id="${esc(p.id)}">Copiar legenda</button>` : ''}` : '';
+  return `<article class="post">
+    <div class="midia">${midia}</div>
+    <div class="corpo">
+      <div class="meta"><span class="selo ${p.status}">${ROTULOS[p.status]}</span><span>${quando}${p.duracao ? ` · ${Math.round(p.duracao)}s` : ''}</span></div>
+      <p class="lead">${leadHtml(p.noticia.lead)}</p>
+      ${p.status === 'erro' ? `<p class="falha">${esc(p.erro)}</p>` : ''}
+      <div class="acoes">
+        ${acoesProntas}
+        <button type="button" data-acao="editar" data-id="${esc(p.id)}" ${ocupado ? 'disabled' : ''}>Editar</button>
+        <button type="button" class="perigo" data-acao="excluir" data-id="${esc(p.id)}" ${ocupado ? 'disabled' : ''}>Excluir</button>
+      </div>
+    </div>
+  </article>`;
+}
+
+// Redesenha só os cartões que mudaram, para não interromper vídeos tocando.
+function desenhar() {
+  const lista = $('lista');
+  if (!posts.length) { lista.innerHTML = '<p class="vazia">Nenhum Reel ainda. Envie o primeiro ao lado.</p>'; return; }
+  lista.querySelector('.vazia')?.remove();
+  const atuais = new Map([...lista.children].map((el) => [el.dataset.id, el]));
+  posts.forEach((p, i) => {
+    const assinatura = `${p.status}|${p.progresso}|${p.video}|${p.noticia.lead}|${p.legenda}`;
+    let el = atuais.get(p.id);
+    if (!el || el.dataset.assinatura !== assinatura) {
+      const novo = document.createElement('div');
+      novo.innerHTML = cartao(p);
+      const cartaoNovo = novo.firstElementChild;
+      cartaoNovo.dataset.id = p.id;
+      cartaoNovo.dataset.assinatura = assinatura;
+      el ? el.replaceWith(cartaoNovo) : null;
+      el = cartaoNovo;
+    }
+    if (lista.children[i] !== el) lista.insertBefore(el, lista.children[i] ?? null);
+    atuais.delete(p.id);
+  });
+  atuais.forEach((el) => el.remove());
+}
+
+async function atualizarLista() {
+  try {
+    posts = await api('/api/posts');
+    desenhar();
+  } catch (erro) {
+    console.error(erro);
+  }
+  clearTimeout(consulta);
+  if (posts.some((p) => p.status === 'na_fila' || p.status === 'renderizando')) consulta = setTimeout(atualizarLista, 1500);
+}
+
+async function copiar(texto) {
+  try { await navigator.clipboard.writeText(texto); }
+  catch {
+    const area = Object.assign(document.createElement('textarea'), {value: texto});
+    document.body.append(area); area.select(); document.execCommand('copy'); area.remove();
+  }
+}
+
+$('lista').addEventListener('click', async (e) => {
+  const botao = e.target.closest('button[data-acao]');
+  if (!botao) return;
+  const post = posts.find((p) => p.id === botao.dataset.id);
+  if (!post) return;
+  if (botao.dataset.acao === 'editar') entrarEdicao(post);
+  if (botao.dataset.acao === 'copiar') {
+    await copiar(post.legenda);
+    botao.textContent = 'Copiada!';
+    setTimeout(() => { botao.textContent = 'Copiar legenda'; }, 1600);
+  }
+  if (botao.dataset.acao === 'excluir' && confirm('Excluir este Reel e seus arquivos?')) {
+    try {
+      await api(`/api/posts/${post.id}`, {method: 'DELETE'});
+      if (editandoId === post.id) limparForm();
+      await atualizarLista();
+    } catch (erro) { alert(erro.message); }
+  }
+});
+
+carregarMascaras().catch((erro) => avisar(`Não foi possível carregar as máscaras: ${erro.message}`));
+atualizarLista();
+contar();
+</script>
+</body>
+</html>

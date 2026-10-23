@@ -3,12 +3,40 @@
 Gera Reels de notícia (1080×1920, 30 fps, H.264 + AAC) a partir de **uma foto ou vídeo + manchete + lead**,
 aplicando uma **máscara** (identidade visual do perfil/site). O motion graphics é feito com [Remotion](https://www.remotion.dev/).
 
-Etapa atual: **passo 1 (template de vídeo)**. Ainda não há painel, Supabase, IA nem publicação no Instagram.
+Etapa atual: **template de vídeo + painel de envio com sugestões do Claude**. Ainda não há Supabase nem publicação automática no Instagram.
 
-## Como usar
+## Painel de envio
 
 ```bash
 npm install
+ANTHROPIC_API_KEY=sk-ant-... PAINEL_SENHA=uma-senha npm run painel
+# abra http://localhost:3000 (usuário qualquer, senha = PAINEL_SENHA)
+```
+
+No painel (feito para usar no celular):
+
+1. Escolha a foto ou o vídeo e escreva o lead.
+2. Opcional: **Sugerir destaques, etiqueta e legenda** — o Claude marca 1 a 3 trechos-chave do lead com
+   `*asteriscos*`, sugere editoria/etiqueta e escreve a legenda com hashtags. O texto do lead nunca é alterado:
+   se a IA mudar qualquer palavra, a sugestão de destaque é descartada.
+3. **Gerar vídeo**: o Reel entra na fila e aparece na lista com o progresso. Quando fica pronto, dá para assistir,
+   baixar o MP4 e a capa e copiar a legenda.
+4. **Editar** muda os textos e renderiza de novo com a mesma mídia; **Excluir** apaga o post e os arquivos.
+
+| Variável | Uso |
+|---|---|
+| `PORTA` | Porta HTTP (padrão 3000) |
+| `PAINEL_SENHA` | Senha de acesso (Basic Auth). **Obrigatória** se o painel ficar exposto na internet |
+| `ANTHROPIC_API_KEY` | Chave da API do Claude, usada só no botão de sugestões |
+| `PASTA_DADOS` | Onde ficam uploads, vídeos e `posts.json` (padrão `./dados`) |
+| `REMOTION_BROWSER_EXECUTABLE` | Chromium local, se o Remotion não puder baixar o dele |
+
+Os renders rodam um por vez na própria máquina (cerca de 30 a 60 s para um Reel de 8 s em 4 núcleos).
+As sugestões usam o modelo `claude-opus-5-5` com fallback automático do servidor caso o modelo recuse o pedido.
+
+## Render por linha de comando
+
+```bash
 npm run studio                                  # editor visual com prévia ao vivo
 npm run render -- exemplos/post-video.json      # gera out/post-video.mp4 e out/post-video-capa.jpg
 ```
@@ -71,18 +99,23 @@ versionados: coloque ali seus próprios arquivos de teste.
 ## Estrutura
 
 ```
-src/Reel.tsx        composição: mídia, círculo, etiqueta, texto, assinatura e animações
-src/Root.tsx        registro da composição e cálculo da duração
-src/tipos.ts        tipos de Noticia e Mascara
-scripts/render.mjs  render por linha de comando (MP4 + capa)
-mascaras/           máscaras disponíveis
-exemplos/           posts de exemplo
+src/Reel.tsx            composição: mídia, círculo, etiqueta, texto, assinatura e animações
+src/Root.tsx            registro da composição e cálculo da duração
+src/tipos.ts            tipos de Noticia e Mascara
+servidor/index.mjs      painel: rotas HTTP, upload e senha
+servidor/fila.mjs       fila de render e estado dos posts (dados/posts.json)
+servidor/ia.mjs         sugestões com o Claude
+servidor/renderizador.mjs  render MP4 + capa (compartilhado com o script)
+painel/index.html       interface do painel
+scripts/render.mjs      render por linha de comando
+mascaras/               máscaras disponíveis
+exemplos/               posts de exemplo
 ```
 
 ## Próximos passos
 
-1. Supabase: armazenamento das mídias, tabela de posts e máscaras.
-2. Claude API: sugerir manchete, destaque, etiqueta, editoria e legenda a partir do lead.
-3. Painel de envio com prévia e aprovação.
-4. Legendas automáticas e trilha.
-5. Publicação e agendamento via Instagram Graph API.
+1. Personalizar a máscara (nome, @, logo e cor).
+2. Hospedar o painel numa VPS ou serviço com Docker (precisa de CPU para o render) e trocar `dados/` pelo Supabase
+   (Storage para mídias e vídeos, tabela de posts) — a troca fica concentrada em `servidor/fila.mjs`.
+3. Legendas automáticas para vídeos com fala e trilha para fotos.
+4. Publicação e agendamento via Instagram Graph API.

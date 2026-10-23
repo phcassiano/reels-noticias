@@ -3,3 +3,4 @@ out/
 public/_entrada/
 # mídia de teste local (não versionar conteúdo de terceiros)
 public/exemplo/
+dados/
