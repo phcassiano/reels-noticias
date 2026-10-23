@@ -3,18 +3,23 @@
 export type Mascara = {
   id: string;
   nome: string;
+  // "citacao": mídia em tela cheia com círculo de aspas (padrão)
+  // "manchete": mídia no topo que se funde num fundo sólido, título grande e faixa colorida lateral
+  layout?: 'citacao' | 'manchete';
   perfil: {
-    nome: string; // assinatura em caixa alta, ex: "SEU SITE"
+    nome: string; // assinatura / marca em texto
     handle: string; // sem @
   };
-  logo?: string; // vai dentro do círculo; sem logo, o círculo mostra aspas
+  logo?: string; // citação: dentro do círculo; manchete: centralizado embaixo
   overlayPng?: string; // PNG 1080x1920 com transparência, por cima de tudo (opcional)
-  pretoEBranco?: boolean; // mídia em P&B, como no modelo
+  pretoEBranco?: boolean; // mídia em P&B
   cores: {
-    destaque: string; // círculo, barras e palavras marcadas com *asteriscos*
-    textoSobreDestaque: string; // aspas dentro do círculo
-    etiquetaFundo: string; // caixa da etiqueta no topo
-    etiquetaTexto: string;
+    destaque: string; // trechos marcados com *asteriscos* e detalhes
+    textoSobreDestaque?: string; // citação: aspas dentro do círculo
+    etiquetaFundo?: string; // citação: caixa da etiqueta
+    etiquetaTexto?: string;
+    fundo?: string; // manchete: cor sólida onde a mídia se funde
+    faixa?: string[]; // manchete: cores da faixa lateral, de cima para baixo
   };
 };
 
@@ -26,6 +31,7 @@ export type Midia = {
 export type Noticia = {
   midia: Midia;
   lead: string; // texto principal; trechos entre *asteriscos* ficam na cor de destaque
+  subtitulo?: string; // linha de apoio abaixo do texto principal (layout manchete)
   editoria?: string; // vira "#Editoria" na etiqueta se não houver etiqueta
   etiqueta?: string; // ex: "Urgente", "#Política"
   credito?: string; // ex: "Foto: divulgação"

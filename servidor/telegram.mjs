@@ -22,6 +22,7 @@ const ou = (v) => (v ? esc(v) : '<i>—</i>');
 
 const CAMPOS_EDITAVEIS = {
   lead: {nome: 'lead', pedido: 'Mande o novo lead. Use *asteriscos* para destacar palavras.', max: 400},
+  subtitulo: {nome: 'subtítulo', pedido: 'Mande o subtítulo (aparece na máscara Manchete). Envie - para remover.', max: 160},
   etiqueta: {nome: 'etiqueta', pedido: 'Mande a etiqueta (ex: #Política ou Urgente). Envie - para remover.', max: 30},
   editoria: {nome: 'editoria', pedido: 'Mande a editoria (ex: Economia). Envie - para remover.', max: 40},
   credito: {nome: 'crédito', pedido: 'Mande o crédito (ex: Foto: Agência Brasil). Envie - para remover.', max: 60},
@@ -64,7 +65,7 @@ export const iniciarBot = ({token, autorizados, apiRoot}) => {
     const mascara = mascaraPadrao();
     const r = {
       id: novoId(),
-      campos: {lead: '', etiqueta: '', editoria: '', credito: '', legenda: '', mascaraId: mascara.id},
+      campos: {lead: '', subtitulo: '', etiqueta: '', editoria: '', credito: '', legenda: '', mascaraId: mascara.id},
       pretoEBranco: Boolean(mascara.pretoEBranco),
     };
     rascunhos.set(chatId, r);
@@ -82,6 +83,7 @@ export const iniciarBot = ({token, autorizados, apiRoot}) => {
       `${r.postId ? '✏️ <b>Editando Reel</b>' : '🎬 <b>Novo Reel</b>'} · ${midia}`,
       '',
       `<b>Lead:</b> ${r.campos.lead ? leadHtml(r.campos.lead) : '<i>falta o lead</i>'}`,
+      `<b>Subtítulo:</b> ${ou(r.campos.subtitulo)}`,
       `<b>Etiqueta:</b> ${ou(r.campos.etiqueta)}   <b>Editoria:</b> ${ou(r.campos.editoria)}`,
       `<b>Crédito:</b> ${ou(r.campos.credito)}`,
       `<b>Máscara:</b> ${esc(mascara?.nome ?? r.campos.mascaraId)} · P&amp;B: ${r.pretoEBranco ? 'sim' : 'não'}`,
@@ -95,7 +97,7 @@ export const iniciarBot = ({token, autorizados, apiRoot}) => {
     const t = new InlineKeyboard();
     if (r.tipoMidia && r.campos.lead) t.text(r.postId ? '✅ Salvar e gerar de novo' : '✅ Gerar vídeo', 'gerar').row();
     t.text('✏️ Lead', 'campo:lead').text('🏷 Etiqueta', 'campo:etiqueta').text('📂 Editoria', 'campo:editoria').row();
-    t.text('©️ Crédito', 'campo:credito').text('📝 Legenda', 'campo:legenda').row();
+    t.text('📄 Subtítulo', 'campo:subtitulo').text('©️ Crédito', 'campo:credito').text('📝 Legenda', 'campo:legenda').row();
     t.text(r.pretoEBranco ? '🎨 Colorido' : '⚫ Preto e branco', 'pb');
     if (listarMascaras().length > 1) t.text('🎭 Trocar máscara', 'mascara');
     t.row();
@@ -355,6 +357,7 @@ export const iniciarBot = ({token, autorizados, apiRoot}) => {
       tipoMidia: post.tipoMidia,
       campos: {
         lead: n.lead,
+        subtitulo: n.subtitulo ?? '',
         etiqueta: n.etiqueta ?? '',
         editoria: n.editoria ?? '',
         credito: n.credito ?? '',

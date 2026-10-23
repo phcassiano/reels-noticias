@@ -131,9 +131,17 @@ npm run render -- exemplos/post-video.json      # gera out/post-video.mp4 e out/
 Se o Chrome do Remotion não puder ser baixado, aponte para um Chromium local:
 `REMOTION_BROWSER_EXECUTABLE=/caminho/do/chrome-headless-shell npm run render -- ...`
 
-## Layout
+## Layouts
 
-Mídia em tela cheia (opcionalmente em P&B), círculo na cor de destaque com aspas ou o logo da máscara,
+Cada máscara escolhe um layout (`"layout"` no JSON):
+
+- **`citacao`** (padrão, máscara `padrao`): mídia em tela cheia, círculo com aspas ou logo, etiqueta no topo, texto
+  grande com barra vertical e assinatura.
+- **`manchete`** (máscara `manchete-azul`): mídia no topo que se dissolve num fundo sólido, etiqueta em pílula,
+  título grande em branco com os trechos `*destacados*` na cor de destaque, subtítulo opcional, marca centralizada
+  embaixo e faixa colorida na lateral esquerda.
+
+Detalhes do layout de citação: mídia em tela cheia (opcionalmente em P&B), círculo na cor de destaque com aspas ou o logo da máscara,
 etiqueta no canto superior direito, texto principal grande com barra vertical, assinatura em caixa alta
 e barra na base. Tudo entra em sequência (zoom da mídia, etiqueta "digitada", círculo com mola,
 palavras subindo em cascata) e sai no último meio segundo para o loop do Reels ficar suave.
@@ -154,6 +162,7 @@ palavras subindo em cascata) e sai no último meio segundo para o loop do Reels 
 }
 ```
 
+- `subtitulo`: linha de apoio abaixo do título (usada no layout `manchete`).
 - `lead`: texto principal. Trechos entre `*asteriscos*` ficam na cor de destaque. O tamanho da fonte se ajusta ao comprimento.
 - `etiqueta`: caixa no topo; se omitida, usa `#editoria`.
 - `credito`: aparece na linha abaixo da assinatura, ao lado do @.
@@ -168,13 +177,16 @@ Cada máscara é um JSON em `mascaras/<id>.json`, com arquivos em `public/mascar
 
 | Campo | Uso |
 |---|---|
-| `perfil.nome` | Assinatura em caixa alta abaixo do texto |
+| `layout` | `citacao` (padrão) ou `manchete` |
+| `perfil.nome` | Assinatura (citação) ou marca em texto quando não há logo (manchete) |
 | `perfil.handle` | @ na linha de detalhe |
-| `logo` (opcional) | Vai dentro do círculo; sem logo, o círculo mostra aspas |
+| `logo` (opcional) | Citação: dentro do círculo (sem logo, aspas). Manchete: centralizado embaixo |
 | `pretoEBranco` | Mídia em P&B por padrão |
 | `cores.destaque` | Círculo, barras e palavras destacadas |
-| `cores.textoSobreDestaque` | Aspas dentro do círculo |
-| `cores.etiquetaFundo` / `cores.etiquetaTexto` | Caixa da etiqueta |
+| `cores.textoSobreDestaque` | Citação: aspas dentro do círculo |
+| `cores.etiquetaFundo` / `cores.etiquetaTexto` | Citação: caixa da etiqueta |
+| `cores.fundo` | Manchete: cor sólida onde a mídia se dissolve |
+| `cores.faixa` | Manchete: lista de cores da faixa lateral, de cima para baixo |
 | `overlayPng` (opcional) | PNG 1080×1920 transparente aplicado por cima de tudo |
 
 Para criar uma nova: copie `mascaras/padrao.json`, troque os campos e coloque os arquivos na pasta correspondente
@@ -186,7 +198,9 @@ versionados: coloque ali seus próprios arquivos de teste.
 ## Estrutura
 
 ```
-src/Reel.tsx            composição: mídia, círculo, etiqueta, texto, assinatura e animações
+src/Reel.tsx            escolhe o layout da máscara
+src/layouts/            layouts (Citacao.tsx, Manchete.tsx)
+src/compartilhado.tsx   animações e peças comuns aos layouts
 src/Root.tsx            registro da composição e cálculo da duração
 src/tipos.ts            tipos de Noticia e Mascara
 servidor/index.mjs      painel: rotas HTTP, upload e senha

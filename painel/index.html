@@ -133,6 +133,9 @@
       <textarea id="lead" name="lead" maxlength="400" placeholder="Ex: Governo anuncia corte de 10% na conta de luz a partir de janeiro"></textarea>
       <div class="dica"><span>Use <code>*palavras*</code> para destacar em cor</span><span id="contador">0/400</span></div>
 
+      <label for="subtitulo">Subtítulo <span style="font-weight:500">(opcional, aparece na máscara Manchete)</span></label>
+      <input type="text" id="subtitulo" name="subtitulo" maxlength="160" placeholder="Ex: Conheça os principais pontos dos programas de governo">
+
       <button type="button" class="ia" id="sugerir">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg>
         <span>Sugerir destaques, etiqueta e legenda</span>
@@ -255,7 +258,7 @@ $('sugerir').addEventListener('click', async () => {
 // ---------- envio ----------
 function camposDoForm() {
   return {
-    lead: $('lead').value, editoria: $('editoria').value, etiqueta: $('etiqueta').value,
+    lead: $('lead').value, subtitulo: $('subtitulo').value, editoria: $('editoria').value, etiqueta: $('etiqueta').value,
     credito: $('credito').value, mascaraId: $('mascaraId').value, legenda: $('legenda').value,
     pretoEBranco: String($('pretoEBranco').checked), duracaoFoto: $('duracaoFoto').value,
   };
@@ -325,6 +328,7 @@ function entrarEdicao(post) {
   editandoId = post.id;
   const n = post.noticia;
   $('lead').value = n.lead; contar();
+  $('subtitulo').value = n.subtitulo ?? '';
   $('editoria').value = n.editoria ?? '';
   $('etiqueta').value = n.etiqueta ?? '';
   $('credito').value = n.credito ?? '';

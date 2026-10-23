@@ -19,6 +19,7 @@ export const lerCampos = (corpo) => {
   carregarMascara(mascaraId); // valida
   const noticia = {lead};
   for (const [campo, max] of [
+    ['subtitulo', 160],
     ['editoria', 40],
     ['etiqueta', 30],
     ['credito', 60],

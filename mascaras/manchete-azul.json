@@ -1,0 +1,15 @@
+{
+  "id": "manchete-azul",
+  "nome": "Manchete azul",
+  "layout": "manchete",
+  "perfil": {
+    "nome": "Seu Site",
+    "handle": "seusite"
+  },
+  "pretoEBranco": false,
+  "cores": {
+    "destaque": "#19F6FF",
+    "fundo": "#001F3E",
+    "faixa": ["#DA00D3", "#FE1630", "#FFAA01", "#E1FF01", "#23FACE"]
+  }
+}

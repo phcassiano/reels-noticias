@@ -13,4 +13,6 @@ export const carregarMascara = (id) => {
 export const listarMascaras = () =>
   readdirSync(PASTA)
     .filter((f) => f.endsWith('.json'))
-    .map((f) => carregarMascara(f.slice(0, -5)));
+    .map((f) => carregarMascara(f.slice(0, -5)))
+    // a padrão vem primeiro: é a escolhida quando nada é informado
+    .sort((a, b) => (a.id === 'padrao' ? -1 : b.id === 'padrao' ? 1 : a.nome.localeCompare(b.nome)));
