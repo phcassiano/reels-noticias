@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Img} from 'remotion';
 import {
+  assinaturaCurta,
   INICIO_PALAVRAS,
   MidiaAnimada,
   PASSO_PALAVRAS,
@@ -90,7 +91,9 @@ const Marca: React.FC<ReelProps> = ({mascara}) => {
           <div style={{fontWeight: 900, fontSize: 46, letterSpacing: '0.04em', textTransform: 'uppercase'}}>
             {mascara.perfil.nome}
           </div>
-          <div style={{fontWeight: 400, fontSize: 28, opacity: 0.75, marginTop: 2}}>@{mascara.perfil.handle}</div>
+          {assinaturaCurta(mascara) && (
+            <div style={{fontWeight: 400, fontSize: 28, opacity: 0.75, marginTop: 2}}>{assinaturaCurta(mascara)}</div>
+          )}
         </>
       )}
     </div>

@@ -9,7 +9,8 @@ export type Mascara = {
   layout?: 'citacao' | 'manchete';
   perfil: {
     nome: string; // assinatura / marca em texto
-    handle: string; // sem @
+    handle?: string; // @ do perfil, sem o @
+    site?: string; // endereço do site; quando presente, aparece no lugar do @
   };
   logo?: string; // citação: dentro do círculo; manchete: centralizado embaixo
   overlayPng?: string; // PNG 1080x1920 com transparência, por cima de tudo (opcional)

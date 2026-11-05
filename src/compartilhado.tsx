@@ -1,6 +1,6 @@
 import React from 'react';
 import {Easing, Img, interpolate, OffthreadVideo, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Midia} from './tipos';
+import type {Mascara, Midia} from './tipos';
 import {resolverSrc} from './util';
 
 export const SAIDA = 16; // frames da animação de saída
@@ -99,3 +99,7 @@ export const Palavra: React.FC<{texto: string; cor: string; indice: number; tota
     </span>
   );
 };
+
+// Linha curta abaixo da marca: o site, se houver, senão o @ do perfil.
+export const assinaturaCurta = (mascara: Mascara) =>
+  mascara.perfil.site ?? (mascara.perfil.handle ? `@${mascara.perfil.handle}` : '');

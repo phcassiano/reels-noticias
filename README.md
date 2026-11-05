@@ -180,7 +180,8 @@ Cada máscara é um JSON em `mascaras/<id>.json`, com arquivos em `public/mascar
 | `padrao` | `true` na máscara que o painel e o bot usam quando nada é escolhido (hoje: `manchete-azul`) |
 | `layout` | `citacao` (padrão) ou `manchete` |
 | `perfil.nome` | Assinatura (citação) ou marca em texto quando não há logo (manchete) |
-| `perfil.handle` | @ na linha de detalhe |
+| `perfil.handle` | @ do perfil na linha de detalhe |
+| `perfil.site` (opcional) | Endereço do site, mostrado no lugar do @ quando presente |
 | `logo` (opcional) | Citação: dentro do círculo (sem logo, aspas). Manchete: centralizado embaixo |
 | `pretoEBranco` | Mídia em P&B por padrão |
 | `cores.destaque` | Círculo, barras e palavras destacadas |

@@ -4,8 +4,8 @@
   "padrao": true,
   "layout": "manchete",
   "perfil": {
-    "nome": "Seu Site",
-    "handle": "seusite"
+    "nome": "O Informe News",
+    "site": "oinformenews.com.br"
   },
   "pretoEBranco": false,
   "cores": {

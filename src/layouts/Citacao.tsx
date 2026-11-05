@@ -2,6 +2,7 @@ import React from 'react';
 import {AbsoluteFill, Easing, Img, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {
   INICIO_PALAVRAS,
+  assinaturaCurta,
   MidiaAnimada,
   PASSO_PALAVRAS,
   Palavra,
@@ -124,7 +125,7 @@ const BlocoTexto: React.FC<ReelProps> = ({noticia, mascara}) => {
   const barra = useProgresso(18, 16, 6);
   const assinatura = useProgresso(fimPalavras + 4, 16, 2);
   const detalhe = useProgresso(fimPalavras + 10, 14, 0);
-  const linha2 = [`@${mascara.perfil.handle}`, noticia.credito].filter(Boolean).join('  ·  ');
+  const linha2 = [assinaturaCurta(mascara), noticia.credito].filter(Boolean).join('  ·  ');
 
   return (
     <div
